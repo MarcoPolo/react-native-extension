@@ -9,6 +9,7 @@ import {
 } from "../utils";
 
 import { REACT_RULES_WITH_COLOR, JSON_SPACING } from "../constants";
+var colorNamespace = "Styles.globalColors";
 
 function generateReactRule(styleObj, projectColorMap, mixin) {
     var selector = styleObj.selector;
@@ -20,14 +21,14 @@ function generateReactRule(styleObj, projectColorMap, mixin) {
         }
 
         if (REACT_RULES_WITH_COLOR.includes(prop) && styleObj[prop] in projectColorMap) {
-            styleObj[prop] = `colors.${projectColorMap[styleObj[prop]]}`;
+            styleObj[prop] = `${colorNamespace}.${projectColorMap[styleObj[prop]]}`;
         }
     });
 
     var selectorName = generateName(selector);
     var styleObjText = JSON.stringify(styleObj, null, JSON_SPACING)
         .replace(/"(.+)":/g, "$1:")
-        .replace(/: "colors\.(.*)"/g, ": colors.$1");
+        .replace(new RegExp(`: "${colorNamespace}\\.(.*)"`, "g"), `: ${colorNamespace}.$1`);
 
     return `const ${selectorName} = ${styleObjText};`;
 }
@@ -52,7 +53,7 @@ function getStyleguideTextStylesCode(options, project, textStyles) {
     var textStylesObj = generateStyleguideTextStylesObject(options, project, textStyles);
 
     var textStylesStr = JSON.stringify(textStylesObj, null, JSON_SPACING);
-    var processedTextStyles = textStylesStr.replace(/"(.+)":/g, "$1:").replace(/: "colors\.(.*)"/g, ": colors.$1");
+    var processedTextStyles = textStylesStr.replace(/"(.+)":/g, "$1:").replace(new RegExp(`: "${colorNamespace}\\.(.*)"`, "g"), `: ${colorNamespace}.$1`);
 
     return `const textStyles = StyleSheet.create(${processedTextStyles});`;
 }
